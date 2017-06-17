@@ -231,11 +231,11 @@ function testPlayer(x,y,d) {
 	this.keyPress = function() {
 		if (keyIsDown(RIGHT_ARROW) && !this.hit.d && !this.hit.e) {
     		if (this.xVelocity < 10) //max speed
-    			this.xVelocity = this.xVelocity + 1;
+    			this.xVelocity = this.xVelocity + 0.8;
 		}
 		if (keyIsDown(LEFT_ARROW) && !this.hit.a && !this.hit.H) {
     		if (this.xVelocity > -10)
-    			this.xVelocity = this.xVelocity - 1;
+    			this.xVelocity = this.xVelocity - 0.8;
 		}
 		//this is mostly meant for crouching, not implemented yet:
 		//if (keyIsDown(DOWN_ARROW)  && !hit.g && !hit.f)
