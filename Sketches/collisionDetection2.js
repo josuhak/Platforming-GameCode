@@ -10,7 +10,7 @@ function hitBox(width, height, thickness, x, y) {
 	this.w = width;
 	this.h = height;
 	this.t = thickness;
-	this.a = [x,y+thickness+(height/5)];
+	this.a = [x,y+thickness+(height/5)]; //offsetted a little bit to fix hitbox
 	this.b = [x+thickness+(width/5),y];
 	this.c = [x+width-thickness-(width/5),y];
 	this.d = [x+width,y+thickness+(height/5)];
@@ -28,11 +28,11 @@ function hitBox(width, height, thickness, x, y) {
 		}
 	}
 	
-	//this function updates the upper left outer corner
+	//this function updates every single point
 	this.updatePoint = function(newX,newY) {
 		this.x = newX;
 		this.y = newY;
-		this.a = [newX,newY+this.t+(height/5)];
+		this.a = [newX,newY+this.t+(height/5)]; //offsetted a little bit to fix hitbox
 		this.b = [newX+this.t+(width/5),newY];
 		this.c = [newX+this.w-this.t-(width/5),newY];
 		this.d = [newX+this.w,newY+this.t+(height/5)];
@@ -153,6 +153,7 @@ function testPlayer(x,y,d) {
 	this.y = y;
 	this.d = d;
 	this.hitBox = new hitBox(d,d,7,x-(d/2),y-(d/2));
+	//updates both player and hitbox
 	this.updatePoint = function() {
 		this.x = this.x + this.xVelocity;
 		this.y = this.y + this.yVelocity;
@@ -186,6 +187,7 @@ function testPlayer(x,y,d) {
 	
 	//NEEDS a platform object, stores it in hit property
 	this.hitTest = function(platform) {
+			//each property may or may not contain an array
 			this.hit = {
 			a: platform.inRect(this.hitBox.a),
 			b: platform.inRect(this.hitBox.b),
@@ -228,12 +230,12 @@ function testPlayer(x,y,d) {
 	//this depends on the hit and gravity properties
 	this.keyPress = function() {
 		if (keyIsDown(RIGHT_ARROW) && !this.hit.d && !this.hit.e) {
-    		if (this.xVelocity < 10)
-    			this.xVelocity = this.xVelocity + 2;
+    		if (this.xVelocity < 10) //max speed
+    			this.xVelocity = this.xVelocity + 1;
 		}
 		if (keyIsDown(LEFT_ARROW) && !this.hit.a && !this.hit.H) {
     		if (this.xVelocity > -10)
-    			this.xVelocity = this.xVelocity - 2;
+    			this.xVelocity = this.xVelocity - 1;
 		}
 		//this is mostly meant for crouching, not implemented yet:
 		//if (keyIsDown(DOWN_ARROW)  && !hit.g && !hit.f)
@@ -256,17 +258,48 @@ function testPlayer(x,y,d) {
 	//slows xVelocity to a stop
 	this.doFriction = function() {
 		if ((this.xVelocity > 0) && !keyIsDown(RIGHT_ARROW)) {
-			this.xVelocity = this.xVelocity - 1;
+			this.xVelocity = this.xVelocity - 1.5;
 			if (this.xVelocity <= 0) { //when it finally stops moving, make sure the velocity stays 0
 				this.xVelocity = 0;
 			}
 		}
 		if ((this.xVelocity < 0) && !keyIsDown(LEFT_ARROW)) {
-			this.xVelocity = this.xVelocity + 1;
+			this.xVelocity = this.xVelocity + 1.5;
 			if (this.xVelocity >= 0) {
 				this.xVelocity = 0;
 			}
 		}		
 	}
 
+}
+
+ function platform(x,y,w,h) {
+	//has multiple platforms all under one object
+	//uses arrays, first index corresponding to the initial platform, second one to the second platform
+	//and so on
+	this.x = [x];
+	this.y = [y];
+	this.w = [w];
+	this.h = [h];
+	this.addPlatform = function(x,y,w,h) {
+		this.x.push(x);
+		this.y.push(y);
+		this.w.push(w);
+		this.h.push(h);
+	}
+	//p is an array [x,y] representing a point to test
+	this.inRect = function(p) {
+		var hitTests = [];
+		for (var i = 0; i < this.x.length; i++) {
+			hitTests.push( ( (p[0] >= this.x[i]) && (p[0] <= this.x[i] + this.w[i]) ) && ( (p[1] >= this.y[i]) && (p[1] <= this.y[i] + this.h[i]) ) );
+		}
+		return hitTests;
+	}
+	this.drawRect = function() {
+		fill('red');
+		noStroke(); //rect(x,y,w,h);
+		for (var i = 0; i < this.x.length; i++) {
+			rect(this.x[i],this.y[i],this.w[i],this.h[i]);
+		}
+	}
 }
