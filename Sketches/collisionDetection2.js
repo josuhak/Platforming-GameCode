@@ -187,7 +187,6 @@ function testPlayer(x,y,d) {
 	
 	//NEEDS a platform object, stores it in hit property
 	this.hitTest = function(platform) {
-			//each property may or may not contain an array
 			this.hit = {
 			a: platform.inRect(this.hitBox.a),
 			b: platform.inRect(this.hitBox.b),
@@ -273,7 +272,7 @@ function testPlayer(x,y,d) {
 
 }
 
- function platform(x,y,w,h) {
+ function Platform(x,y,w,h) {
 	//has multiple platforms all under one object
 	//uses arrays, first index corresponding to the initial platform, second one to the second platform
 	//and so on
@@ -281,19 +280,48 @@ function testPlayer(x,y,d) {
 	this.y = [y];
 	this.w = [w];
 	this.h = [h];
+	this.init = false;
+	this.pushed = true;
+	this.xi = 0; //temp variables used to initialize new platform
+	this.yi = 0;
+	this.xf = 0;
+	this.yf = 0;
 	this.addPlatform = function(x,y,w,h) {
 		this.x.push(x);
 		this.y.push(y);
 		this.w.push(w);
 		this.h.push(h);
 	}
+	
+	//This function is to create platforms by dragging the mouse, for testing purposes.
+	//Function is called when the mouse is pressed on canvas, init is a member variable
+	//that must be set to false initially before you use the function in order to initialize an
+	//initial point
+	this.createPlatform = function() {
+		if (!this.init) {
+			this.init = true;
+			this.xi = mouseX; //these are temp variables used for the vertex of the rectangle
+			this.yi = mouseY;
+			this.pushed = false; //used to make sure you only push once
+		}
+		noFill();
+		stroke('red');
+		strokeWeight(4);
+		this.xf = mouseX;
+		this.yf = mouseY;
+		rect(this.xi,this.yi,this.xf-this.xi,this.yf-this.yi);
+	}
+	
 	//p is an array [x,y] representing a point to test
 	this.inRect = function(p) {
-		var hitTests = [];
+		var hitTest = false;
 		for (var i = 0; i < this.x.length; i++) {
-			hitTests.push( ( (p[0] >= this.x[i]) && (p[0] <= this.x[i] + this.w[i]) ) && ( (p[1] >= this.y[i]) && (p[1] <= this.y[i] + this.h[i]) ) );
+			hitTest = ( (p[0] >= this.x[i]) && (p[0] <= this.x[i] + this.w[i]) ) && ( (p[1] >= this.y[i]) && (p[1] <= this.y[i] + this.h[i]) );
+			if (hitTest) { //if a point is in any of the platforms, break out, no need for computation
+				break;
+			}
 		}
-		return hitTests;
+		return hitTest;
 	}
 	this.drawRect = function() {
 		fill('red');
