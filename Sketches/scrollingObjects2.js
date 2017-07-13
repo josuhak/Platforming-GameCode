@@ -1,5 +1,4 @@
-//These are object constructors used for platformers
-//look at picture on Platformer doc on google drive
+//has scrolling in the y direction
 
 function hitBox(width, height, thickness, x, y) {
 	//thickness tells you how thick the region will be
@@ -32,14 +31,14 @@ function hitBox(width, height, thickness, x, y) {
 	this.updatePoint = function(newX,newY) {
 		this.x = newX;
 		this.y = newY;
-		this.a = [newX,newY+this.t+(height/5)]; //offsetted a little bit to fix hitbox
-		this.b = [newX+this.t+(width/5),newY];
-		this.c = [newX+this.w-this.t-(width/5),newY];
-		this.d = [newX+this.w,newY+this.t+(height/5)];
-		this.e = [newX+this.w,newY+this.h-this.t-(height/5)];
-		this.f = [newX+this.w-this.t-(width/5),newY+this.h];
-		this.g = [newX+this.t+(width/5),newY+this.h];
-		this.H = [newX,newY+this.h-this.t-(height/5)];
+		this.a = [newX,newY+this.t+(this.h/5)]; //offsetted a little bit to fix hitbox
+		this.b = [newX+this.t+(this.w/5),newY];
+		this.c = [newX+this.w-this.t-(this.w/5),newY];
+		this.d = [newX+this.w,newY+this.t+(this.h/5)];
+		this.e = [newX+this.w,newY+this.h-this.t-(this.h/5)];
+		this.f = [newX+this.w-this.t-(this.w/5),newY+this.h];
+		this.g = [newX+this.t+(this.w/5),newY+this.h];
+		this.H = [newX,newY+this.h-this.t-(this.h/5)];
 	}
 	
 	//this function updates the dimensions of the box
@@ -94,14 +93,14 @@ function hitBox(width, height, thickness, x, y) {
 	}
 	
 	this.drawBox = function() {
-		fill('red');
+		fill('aquamarine');
 		noStroke(); //rect(x,y,w,h);
 		rect(this.x,this.y,this.w,this.t);
 		rect(this.x,this.y,this.t,this.h);
-		rect(this.H[0],this.H[1],this.w,this.t);
-		rect(this.c[0],this.c[1],this.t,this.h);
-		fill('black');
-  		stroke('black');
+		rect(this.H[0],this.H[1]+(this.h/5),this.w,this.t);
+		rect(this.c[0]+(this.w/5),this.c[1],this.t,this.h);
+		fill('blue');
+  		stroke('blue');
   		strokeWeight(1);
   		textLeading(15);
   		textSize(11);
@@ -120,227 +119,27 @@ function hitBox(width, height, thickness, x, y) {
 
 
 
-
-function hitRect(x,y,w,h) {
-	//for platform testing
-	this.x = x;
+function scrollCanvas(x,y,w,h) {
+	//its position is given by the upper left corner
+	this.x = x; //in world/scroll coordinates
 	this.y = y;
 	this.w = w;
 	this.h = h;
-	//p is an array [x,y] representing a point to test
-	this.inRect = function(p) {
-		return ( (p[0] >= this.x) && (p[0] <= this.x + this.w) ) && ( (p[1] >= this.y) && (p[1] <= this.y + this.h) );
-	}
-	this.drawRect = function() {
-		fill('red');
-		noStroke(); //rect(x,y,w,h);
-		rect(this.x,this.y,this.w,this.h);
-	}
 }
 
 
 
 
-
-//******the order these member variables are in
-//the order the computation should be done******
-
-function testPlayer(x,y,d) {
-	//uses an ellipse to test hit detection and gravity
-	//width and height are the diameters/major and minor axes
-	//hitBox(width,height,thickness,x,y)
-	this.x = x;
-	this.y = y;
-	this.d = d;
-	this.hitBox = new hitBox(d,d,7,x-(d/2),y-(d/2));
-	//updates both player and hitbox
-	this.updatePoint = function() {
-		this.x = this.x + this.xVelocity;
-		this.y = this.y + this.yVelocity;
-		this.hitBox.updatePoint(this.x-(this.d/2),this.y-(this.d/2));
-	}
-	this.drawPlayer = function() {
-		stroke('black');
-		strokeWeight(5);
-		fill('red');
-		ellipse(this.x,this.y,this.d,this.d);
-	}
-	
-	
-	// If gravity is true, no jumping and y acceleration downward begins
-	//If gravity is false, you can jump and no y acceleration downward
-	this.gravity = true;
-
-	
-	//stores booleans for each point that is hit from hitTest method
-	this.hit = {
-		a: false,
-		b: false,
-		c: false,
-		d: false,
-		e: false,
-		f: false,
-		g: false,
-		H: false
-	};
-	
-	
-	//NEEDS a platform object, stores it in hit property
-	this.hitTest = function(platform) {
-			this.hit = {
-			a: platform.inRect(this.hitBox.a),
-			b: platform.inRect(this.hitBox.b),
-			c: platform.inRect(this.hitBox.c),
-			d: platform.inRect(this.hitBox.d),
-			e: platform.inRect(this.hitBox.e),
-			f: platform.inRect(this.hitBox.f),
-			g: platform.inRect(this.hitBox.g),
-			H: platform.inRect(this.hitBox.H),
-		};
-	}
-	
-	
-	//these tell you how much to change x and y by
-	this.xVelocity = 0;
-	this.yVelocity = 0;
-
-	
-	//the collision tests are ALWAYS the first thing you compute. This is used
-	//for the friction and gravity functions, as well removing x and y velocity in collisions.
-	this.collisionTest = function() {
-		if (this.hit.d || this.hit.e || this.hit.a || this.hit.H) {
-			this.xVelocity = 0;
-		}
-		//when you get hit from above, set y movement to zero, but
-		//only when you are moving upwards to prevent the resetting of gravity
-		if ( (this.hit.b || this.hit.c) && this.yVelocity < 0) {
-			this.yVelocity = 0;
-			this.yVelocity = this.yVelocity + 1;
-		}
-		if (this.hit.g || this.hit.f) {
-			this.gravity = false;
-			this.yVelocity = 0;
-		} else {
-			this.gravity = true;
-		}
-	}
-
-	
-	//this depends on the hit and gravity properties
-	this.keyPress = function() {
-		if (keyIsDown(RIGHT_ARROW) && !this.hit.d && !this.hit.e) {
-    		if (this.xVelocity < 10) //max speed
-    			this.xVelocity = this.xVelocity + 0.8;
-		}
-		if (keyIsDown(LEFT_ARROW) && !this.hit.a && !this.hit.H) {
-    		if (this.xVelocity > -10)
-    			this.xVelocity = this.xVelocity - 0.8;
-		}
-		//this is mostly meant for crouching, not implemented yet:
-		//if (keyIsDown(DOWN_ARROW)  && !hit.g && !hit.f)
-    	//	y+=5;
-		if (keyIsDown(UP_ARROW) && !this.gravity) {
-    		this.yVelocity = -15;
-    		this.gravity = true;
-		}
-	}
-
-	
-	this.doGravity = function() {
-		if (this.gravity) {
-			if (this.yVelocity < 15)
-				this.yVelocity = this.yVelocity + 0.5;
-		}
-	}
-
-	
-	//slows xVelocity to a stop
-	this.doFriction = function() {
-		if ((this.xVelocity > 0) && !keyIsDown(RIGHT_ARROW)) {
-			this.xVelocity = this.xVelocity - 1.5;
-			if (this.xVelocity <= 0) { //when it finally stops moving, make sure the velocity stays 0
-				this.xVelocity = 0;
-			}
-		}
-		if ((this.xVelocity < 0) && !keyIsDown(LEFT_ARROW)) {
-			this.xVelocity = this.xVelocity + 1.5;
-			if (this.xVelocity >= 0) {
-				this.xVelocity = 0;
-			}
-		}		
-	}
-
-}
-
- function Platform(x,y,w,h) {
-	//has multiple platforms all under one object
-	//uses arrays, first index corresponding to the initial platform, second one to the second platform
-	//and so on
-	this.x = [x];
-	this.y = [y];
-	this.w = [w];
-	this.h = [h];
-	this.init = false;
-	this.pushed = true;
-	this.xi = 0; //temp variables used to initialize new platform
-	this.yi = 0;
-	this.xf = 0;
-	this.yf = 0;
-	this.addPlatform = function(x,y,w,h) {
-		this.x.push(x);
-		this.y.push(y);
-		this.w.push(w);
-		this.h.push(h);
-	}
-	
-	//This function is to create platforms by dragging the mouse, for testing purposes.
-	//Function is called when the mouse is pressed on canvas, init is a member variable
-	//that must be set to false initially before you use the function in order to initialize an
-	//initial point
-	this.createPlatform = function() {
-		if (!this.init) {
-			this.init = true;
-			this.xi = mouseX; //these are temp variables used for the vertex of the rectangle
-			this.yi = mouseY;
-			this.pushed = false; //used to make sure you only push once
-		}
-		noFill();
-		stroke('red');
-		strokeWeight(4);
-		this.xf = mouseX;
-		this.yf = mouseY;
-		rect(this.xi,this.yi,this.xf-this.xi,this.yf-this.yi);
-	}
-	
-	//p is an array [x,y] representing a point to test
-	this.inRect = function(p) {
-		var hitTest = false;
-		for (var i = 0; i < this.x.length; i++) {
-			hitTest = ( (p[0] >= this.x[i]) && (p[0] <= this.x[i] + this.w[i]) ) && ( (p[1] >= this.y[i]) && (p[1] <= this.y[i] + this.h[i]) );
-			if (hitTest) { //if a point is in any of the platforms, break out, no need for computation
-				break;
-			}
-		}
-		return hitTest;
-	}
-	this.drawRect = function() {
-		fill('red');
-		noStroke(); //rect(x,y,w,h);
-		for (var i = 0; i < this.x.length; i++) {
-			rect(this.x[i],this.y[i],this.w[i],this.h[i]);
-		}
-	}
-}
 
 function scrollPlatform(x,y,w,h) {
 	//has multiple platforms all under one object
 	//uses arrays, first index corresponding to the initial platform, second one to the second platform
 	//and so on
-	this.scrollX;
-	this.x = [x];
+	this.x = [x]; //x and y are in world/scroll coordinates
 	this.y = [y];
 	this.w = [w];
 	this.h = [h];
+
 	this.init = false;
 	this.pushed = true;
 	this.xi = 0; //temp variables used to initialize new platform
@@ -358,57 +157,89 @@ function scrollPlatform(x,y,w,h) {
 	//Function is called when the mouse is pressed on canvas, init is a member variable
 	//that must be set to false initially before you use the function in order to initialize an
 	//initial point
-	this.createPlatform = function() {
+	//REQUIRES scrollCanvas object
+	this.createPlatform = function(canvas) {
 		if (!this.init) {
 			this.init = true;
-			this.xi = mouseX; //these are temp variables used for the vertex of the rectangle
-			this.yi = mouseY;
+			this.xi = mouseX + canvas.x; //these are temp variables used for the vertex of the rectangle
+			this.yi = mouseY + canvas.y;
 			this.pushed = false; //used to make sure you only push once
 		}
 		noFill();
 		stroke('red');
 		strokeWeight(4);
-		this.xf = mouseX;
-		this.yf = mouseY;
-		rect(this.xi,this.yi,this.xf-this.xi,this.yf-this.yi);
+		this.xf = mouseX + canvas.x;
+		this.yf = mouseY + canvas.y;
+		rect(this.xi-canvas.x,this.yi-canvas.y,this.xf-this.xi,this.yf-this.yi); //must subtract off canvasX and canvasY before you draw
 	}
 	
 	//p is an array [x,y] representing a point to test
-	this.inRect = function(p) {
+	//REQUIRES scrollCanvas object
+	this.inRect = function(p,canvas) {
 		var hitTest = false;
 		for (var i = 0; i < this.x.length; i++) {
-			hitTest = ( (p[0] >= this.x[i]) && (p[0] <= this.x[i] + this.w[i]) ) && ( (p[1] >= this.y[i]) && (p[1] <= this.y[i] + this.h[i]) );
+    		hitTest = ( (p[0] >= this.x[i]-canvas.x) && (p[0] <= this.x[i] - canvas.x + this.w[i]) ) && ( (p[1] >= this.y[i] - canvas.y) && (p[1] <= this.y[i] - canvas.y + this.h[i]) );
 			if (hitTest) { //if a point is in any of the platforms, break out, no need for computation
 				break;
 			}
 		}
 		return hitTest;
 	}
-	this.drawRect = function() {
+	//REQUIRES scrollCanvas object
+	this.drawRect = function(canvas) {
 		fill('red');
 		noStroke(); //rect(x,y,w,h);
 		for (var i = 0; i < this.x.length; i++) {
-			rect(this.x[i],this.y[i],this.w[i],this.h[i]);
+			if ( (this.x[i] - canvas.x >= -this.w[i]) && (this.x[i] - canvas.x <= canvas.w) && (this.y[i] - canvas.y >= -this.h[i]) && (this.y[i] - canvas.y <= canvas.h) )
+				rect(this.x[i]-canvas.x,this.y[i]-canvas.y,this.w[i],this.h[i]);
 		}
 	}
 }
 
 
 
-function scrollPlayer(x,y,d) {
+
+
+
+//needs canvas object to construct a player object
+function scrollPlayer(x,y,d,canvas) {
 	//uses an ellipse to test hit detection and gravity
 	//width and height are the diameters/major and minor axes
 	//hitBox(width,height,thickness,x,y)
+	
+	//these are in canvas coordinates
 	this.x = x;
 	this.y = y;
 	this.d = d;
+	this.maxX = (canvas.w)/2 + (canvas.w)/6;
+	this.minX = (canvas.w)/2 - (canvas.w)/6;
+	this.maxY = (canvas.h)/2;
+	this.minY = (canvas.h)/2 - (canvas.h)/5;
+
 	this.hitBox = new hitBox(d,d,7,x-(d/2),y-(d/2));
+	
 	//updates both player and hitbox
-	this.updatePoint = function() {
-		this.x = this.x + this.xVelocity;
-		this.y = this.y + this.yVelocity;
+	//only update player and hitbox when minX<=x<=maxX
+	//otherwise update canvas object coordinates and only y coordinate
+	//REQUIRES a scrollCanvas object
+	this.updatePoint = function(canvas) {
+		if ( (this.x >= this.minX) && (this.x <= this.maxX) ) {
+			this.x = this.x + this.xVelocity;
+		} else if ((this.x <= this.minX && this.xVelocity > 0) || (this.x >= this.maxX && this.xVelocity < 0)) {
+			this.x = this.x + this.xVelocity;
+			} else {
+				canvas.x = canvas.x + this.xVelocity;
+			}
+		if ( (this.y >= this.minY) && (this.y <= this.maxY) ) {
+			this.y = this.y + this.yVelocity;
+		} else if ( (this.y >= this.maxY && this.yVelocity < 0) || (this.y <= this.minY && this.yVelocity > 0) ) {
+			this.y = this.y + this.yVelocity;
+			} else {
+				canvas.y = canvas.y + this.yVelocity;
+			}
 		this.hitBox.updatePoint(this.x-(this.d/2),this.y-(this.d/2));
 	}
+
 	this.drawPlayer = function() {
 		stroke('black');
 		strokeWeight(5);
@@ -436,16 +267,16 @@ function scrollPlayer(x,y,d) {
 	
 	
 	//NEEDS a platform object, stores it in hit property
-	this.hitTest = function(platform) {
+	this.hitTest = function(platform,canvas) {
 			this.hit = {
-			a: platform.inRect(this.hitBox.a),
-			b: platform.inRect(this.hitBox.b),
-			c: platform.inRect(this.hitBox.c),
-			d: platform.inRect(this.hitBox.d),
-			e: platform.inRect(this.hitBox.e),
-			f: platform.inRect(this.hitBox.f),
-			g: platform.inRect(this.hitBox.g),
-			H: platform.inRect(this.hitBox.H),
+			a: platform.inRect(this.hitBox.a,canvas),
+			b: platform.inRect(this.hitBox.b,canvas),
+			c: platform.inRect(this.hitBox.c,canvas),
+			d: platform.inRect(this.hitBox.d,canvas),
+			e: platform.inRect(this.hitBox.e,canvas),
+			f: platform.inRect(this.hitBox.f,canvas),
+			g: platform.inRect(this.hitBox.g,canvas),
+			H: platform.inRect(this.hitBox.H,canvas),
 		};
 	}
 	
