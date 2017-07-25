@@ -220,7 +220,7 @@ function scrollPlayer(x,y,d,canvas) {
 	
 	//updates both player and hitbox
 	//only update player and hitbox when minX<=x<=maxX
-	//otherwise update canvas object coordinates and only y coordinate
+	//otherwise update canvas object coordinates
 	//REQUIRES a scrollCanvas object
 	this.updatePoint = function(canvas) {
 		if ( (this.x >= this.minX) && (this.x <= this.maxX) ) {
@@ -266,7 +266,7 @@ function scrollPlayer(x,y,d,canvas) {
 	};
 	
 	
-	//NEEDS a platform object, stores it in hit property
+	//NEEDS a platform object AND a scrollCanvas object, stores it in hit property
 	this.hitTest = function(platform,canvas) {
 			this.hit = {
 			a: platform.inRect(this.hitBox.a,canvas),
